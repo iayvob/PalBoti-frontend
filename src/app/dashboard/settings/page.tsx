@@ -1,80 +1,72 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useUser } from "@clerk/nextjs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
-import { Button } from "@/src/components/ui/button"
-import { Switch } from "@/src/components/ui/switch"
-import { Label } from "@/src/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
-import { LogOut, User, Bell } from "lucide-react"
-import { useToast } from "@/src/components/ui/use-toast"
-import { Skeleton } from "@/src/components/ui/skeleton"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { SignOutButton, useUser } from "@clerk/nextjs";
+import { LogOut, User, Bell } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export default function SettingsPage() {
-  const { user, isLoaded, signOut } = useUser()
-  const router = useRouter()
-  const { toast } = useToast()
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [notifications, setNotifications] = useState({
     email: false,
     sms: false,
     push: false,
-  })
+  });
 
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/sign-in")
+      router.push("/sign-in");
     }
 
     async function fetchNotificationSettings() {
       try {
-        const response = await fetch("/api/user/notifications")
+        const response = await fetch("/api/user/notifications");
         if (response.ok) {
-          const data = await response.json()
+          const data = await response.json();
           setNotifications({
             email: data.notificationEmail,
             sms: data.notificationSms,
             push: data.notificationPush,
-          })
+          });
         }
       } catch (error) {
-        console.error("Error fetching notification settings:", error)
+        console.error("Error fetching notification settings:", error);
         toast({
           title: "Error",
           description: "Failed to load notification settings",
           variant: "destructive",
-        })
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
     if (isLoaded && user) {
-      fetchNotificationSettings()
+      fetchNotificationSettings();
     }
-  }, [isLoaded, user, router, toast])
-
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-      router.push("/sign-in")
-    } catch (error) {
-      console.error("Error signing out:", error)
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
+  }, [isLoaded, user, router, toast]);
 
   const saveNotificationSettings = async () => {
     try {
-      setSaving(true)
+      setSaving(true);
       const response = await fetch("/api/user/notifications", {
         method: "PATCH",
         headers: {
@@ -85,27 +77,27 @@ export default function SettingsPage() {
           notificationSms: notifications.sms,
           notificationPush: notifications.push,
         }),
-      })
+      });
 
       if (response.ok) {
         toast({
           title: "Settings saved",
           description: "Your notification settings have been updated",
-        })
+        });
       } else {
-        throw new Error("Failed to save settings")
+        throw new Error("Failed to save settings");
       }
     } catch (error) {
-      console.error("Error saving notification settings:", error)
+      console.error("Error saving notification settings:", error);
       toast({
         title: "Error",
         description: "Failed to save notification settings",
         variant: "destructive",
-      })
+      });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   if (!isLoaded) {
     return (
@@ -125,17 +117,14 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Settings</h1>
-        <Button variant="destructive" onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign Out
-        </Button>
+        <SignOutButton />
       </div>
 
       <Tabs defaultValue="account">
@@ -154,7 +143,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Account Information</CardTitle>
-              <CardDescription>Manage your account details and preferences</CardDescription>
+              <CardDescription>
+                Manage your account details and preferences
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1">
@@ -171,7 +162,10 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-1">
                 <Label htmlFor="id">User ID</Label>
-                <div id="id" className="rounded-md border p-2 font-mono text-sm">
+                <div
+                  id="id"
+                  className="rounded-md border p-2 font-mono text-sm"
+                >
                   {user?.id || "Not available"}
                 </div>
               </div>
@@ -183,7 +177,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>Manage how you receive notifications</CardDescription>
+              <CardDescription>
+                Manage how you receive notifications
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {loading ? (
@@ -196,41 +192,63 @@ export default function SettingsPage() {
                 <>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="email-notifications">Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                      <Label htmlFor="email-notifications">
+                        Email Notifications
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive notifications via email
+                      </p>
                     </div>
                     <Switch
                       id="email-notifications"
                       checked={notifications.email}
-                      onCheckedChange={(checked) => setNotifications({ ...notifications, email: checked })}
+                      onCheckedChange={(checked) =>
+                        setNotifications({ ...notifications, email: checked })
+                      }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="sms-notifications">SMS Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Receive notifications via text message</p>
+                      <Label htmlFor="sms-notifications">
+                        SMS Notifications
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive notifications via text message
+                      </p>
                     </div>
                     <Switch
                       id="sms-notifications"
                       checked={notifications.sms}
-                      onCheckedChange={(checked) => setNotifications({ ...notifications, sms: checked })}
+                      onCheckedChange={(checked) =>
+                        setNotifications({ ...notifications, sms: checked })
+                      }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="push-notifications">Push Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Receive push notifications in the app</p>
+                      <Label htmlFor="push-notifications">
+                        Push Notifications
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive push notifications in the app
+                      </p>
                     </div>
                     <Switch
                       id="push-notifications"
                       checked={notifications.push}
-                      onCheckedChange={(checked) => setNotifications({ ...notifications, push: checked })}
+                      onCheckedChange={(checked) =>
+                        setNotifications({ ...notifications, push: checked })
+                      }
                     />
                   </div>
 
-                  <Button onClick={saveNotificationSettings} disabled={saving} className="w-full">
+                  <Button
+                    onClick={saveNotificationSettings}
+                    disabled={saving}
+                    className="w-full"
+                  >
                     {saving ? "Saving..." : "Save Settings"}
                   </Button>
                 </>
@@ -240,5 +258,5 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
