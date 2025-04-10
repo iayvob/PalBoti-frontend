@@ -43,6 +43,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+
+
+    
     const body = await req.json()
     const { notificationEmail, notificationSms, notificationPush } = body
 

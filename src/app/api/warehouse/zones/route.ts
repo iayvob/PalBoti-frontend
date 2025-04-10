@@ -10,6 +10,9 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+
+    
+
     // In a real application, this would fetch from the database
     // For now, we'll use the same data structure but fetch from a Zone model
     // that would need to be added to the Prisma schema
