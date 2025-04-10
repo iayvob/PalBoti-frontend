@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @unique
+  name       String
+  category   String
+  status     String
+  location   String?
+  weight     Float?
+  dimensions String?
+  tags       String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  tasks      Task[]
+
+  @@map("products")
+}
+
+model Task {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  taskId         String    @unique
+  type           String
+  status         String
+  priority       String
+  product        Product?  @relation(fields: [productId], references: [id])
+  productId      String?   @db.ObjectId
+  sourceLocation String?
+  targetLocation String?
+  robotId        String?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+  robot          Robot?    @relation(fields: [robotId], references: [id])
+
+  @@map("tasks")
+}
+
+model Robot {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  robotId      String    @unique
+  name         String
+  status       String
+  battery      Float
+  location     String
+  load         Float
+  lastUpdated  DateTime  @default(now())
+  currentTaskId String?
+  tasks        Task[]
+  logs         RobotLog[]
+
+  @@map("robots")
+}
+
+model RobotLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  robot     Robot    @relation(fields: [robotId], references: [id])
+  robotId   String   @db.ObjectId
+  eventType String
+  message   String
+  timestamp DateTime @default(now())
+  data      Json?
+
+  @@map("robot_logs")
+}
+
+model User {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId           String    @unique
+  email             String    @unique
+  name              String?
+  notificationEmail Boolean   @default(true)
+  notificationSms   Boolean   @default(false)
+  notificationPush  Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  settings  Json?
+  insights          Insight[]
+
+  @@map("users")
+}
+
+model Insight {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  category    String
+  confidence  Float
+  impact      String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @db.ObjectId
+  data        Json?
+  isRead      Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+
+  @@map("insights")
+}
+
+model Zone {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  zoneId    String   @unique
+  type      String
+  status    String
+  items     Int
+  capacity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EfficiencyRecord {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  month     String
+  year      Int
+  rate      Float
+  createdAt DateTime @default(now())
+}
