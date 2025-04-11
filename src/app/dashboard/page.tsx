@@ -4,7 +4,6 @@ import DashboardStats from "../../components/dashboard/dashboard-stats";
 import RobotStatusSectionLive from "../../components/dashboard/robot-status-section-live";
 import ProductClassificationSection from "../../components/dashboard/product-classification-section";
 import WarehouseMapSection from "../../components/dashboard/warehouse-map-section";
-import InsightsSection from "../../components/dashboard/insights-section";
 import { useSession } from "next-auth/react";
 import { useOverlay } from "@/contexts/overlay-context";
 import { useEffect } from "react";
