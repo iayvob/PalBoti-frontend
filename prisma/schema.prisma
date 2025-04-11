@@ -10,6 +10,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+model User {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  email             String    @unique
+  name              String
+  lastLogin         String?
+  isVerified        Boolean   @default(false)
+  password          String
+  userRole          Roles     @default(simple)
+  @@map("users")
+}
+
+model Token {
+  id                      String    @id @map("_id") @default(auto()) @db.ObjectId
+  token                   String
+  email                   String
+  userId                  String
+  tokenExpires            DateTime
+  tokenType               TokenType
+
+  @@unique([userId, tokenType], name: "userId_tokenType")
+}
+
+
 model Product {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   productId  String   @unique
@@ -73,22 +97,6 @@ model RobotLog {
   @@map("robot_logs")
 }
 
-model User {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  clerkId           String    @unique
-  email             String    @unique
-  name              String?
-  notificationEmail Boolean   @default(true)
-  notificationSms   Boolean   @default(false)
-  notificationPush  Boolean   @default(true)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  settings  Json?
-  insights          Insight[]
-
-  @@map("users")
-}
-
 model Insight {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
@@ -97,7 +105,6 @@ model Insight {
   confidence  Float
   impact      String
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
   userId      String   @db.ObjectId
   data        Json?
   isRead      Boolean  @default(false)
@@ -105,6 +112,23 @@ model Insight {
 
   @@map("insights")
 }
+
+model Notifier {
+  id                      String   @id @map("_id") @default(auto()) @db.ObjectId
+  userId                  String   
+  email                   String   
+  notify                  DateTime @default(now())
+  notifyType              NotificationType @default(alert)
+}
+
+enum NotificationType {
+  email_validation
+  password_reset
+  alert
+  mission_completed
+  mission_incomplete
+}
+
 
 model Zone {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -123,4 +147,16 @@ model EfficiencyRecord {
   year      Int
   rate      Float
   createdAt DateTime @default(now())
+}
+
+enum TokenType {
+  email_validation
+  password_reset
+  access
+  refresh
+}
+
+enum Roles {
+  simple
+  supervisor
 }

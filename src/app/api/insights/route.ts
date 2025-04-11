@@ -1,11 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { auth } from "@clerk/nextjs/server"
 import prisma from "../../../lib/prisma"
 import { generateWarehouseInsights } from "../../../lib/gemini"
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth()
+    const { searchParams } = new URL(req.url)
+    const userId = searchParams.get("userId")
+
+    console.log(userId)
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -13,7 +15,7 @@ export async function GET(_req: NextRequest) {
 
     // Find the user in our database
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+      where: { id: userId },
     })
 
     if (!user) {
@@ -36,9 +38,9 @@ export async function GET(_req: NextRequest) {
   }
 }
 
-export async function POST(_req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth()
+    const { userId } = await req.json()
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -46,7 +48,7 @@ export async function POST(_req: NextRequest) {
 
     // Find the user in our database
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+      where: { id: userId },
     })
 
     if (!user) {

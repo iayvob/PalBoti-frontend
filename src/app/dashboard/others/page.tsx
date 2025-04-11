@@ -1,22 +1,28 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
-import { Badge } from "../../../components/ui/badge"
-import { Button } from "../../../components/ui/button"
-import { Users, Mail, Phone, MapPin, Briefcase, Shield } from "lucide-react"
-import Image from "next/image"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card";
+import { Badge } from "../../../components/ui/badge";
+import { Button } from "../../../components/ui/button";
+import { Users, Mail, Phone, MapPin, Briefcase, Shield } from "lucide-react";
+import Image from "next/image";
 
 export const metadata = {
   title: "Team | Smart Warehouse Manager",
   description: "View and manage team members working on the PalBoti project",
-}
+};
 
 // Mock data for team members
 const teamMembers = [
   {
     id: "TM-001",
-    name: "Alex Johnson",
+    name: "Ayoub",
     role: "Mechatronics Engineer",
     email: "alex.johnson@palboti.com",
-    phone: "+1 (555) 123-4567",
+    phone: "+213 (555) 123-4567",
     location: "Engineering Lab",
     image: "/placeholder.svg?height=100&width=100",
     tags: ["supervisor"],
@@ -24,10 +30,10 @@ const teamMembers = [
   },
   {
     id: "TM-002",
-    name: "Sarah Chen",
+    name: "Riles",
     role: "Mechatronics Engineer",
     email: "sarah.chen@palboti.com",
-    phone: "+1 (555) 234-5678",
+    phone: "+213 (555) 234-5678",
     location: "Engineering Lab",
     image: "/placeholder.svg?height=100&width=100",
     tags: [],
@@ -35,10 +41,10 @@ const teamMembers = [
   },
   {
     id: "TM-003",
-    name: "Michael Rodriguez",
+    name: "Aymen",
     role: "Mechatronics Engineer",
     email: "michael.rodriguez@palboti.com",
-    phone: "+1 (555) 345-6789",
+    phone: "+213 (555) 345-6789",
     location: "Engineering Lab",
     image: "/placeholder.svg?height=100&width=100",
     tags: [],
@@ -46,10 +52,10 @@ const teamMembers = [
   },
   {
     id: "TM-004",
-    name: "Priya Patel",
+    name: "Saleh",
     role: "Embedded Systems Engineer",
     email: "priya.patel@palboti.com",
-    phone: "+1 (555) 456-7890",
+    phone: "+213 (555) 456-7890",
     location: "Electronics Lab",
     image: "/placeholder.svg?height=100&width=100",
     tags: ["technical"],
@@ -57,16 +63,16 @@ const teamMembers = [
   },
   {
     id: "TM-005",
-    name: "David Kim",
+    name: "Raouf",
     role: "AI Engineer",
     email: "david.kim@palboti.com",
-    phone: "+1 (555) 567-8901",
+    phone: "+213 (555) 567-8901",
     location: "Data Center",
     image: "/placeholder.svg?height=100&width=100",
     tags: ["technical"],
     expertise: ["Machine Learning", "Computer Vision", "Data Analysis"],
   },
-]
+];
 
 export default function OthersPage() {
   return (
@@ -74,11 +80,17 @@ export default function OthersPage() {
       <div className="grid grid-cols-1 gap-4 mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-2 text-primary">Team Management</h1>
-            <p className="text-muted-foreground">View and manage team members working on the PalBoti project</p>
+            <h1 className="text-2xl font-bold mb-2 text-primary">
+              Team Management
+            </h1>
+            <p className="text-muted-foreground">
+              View and manage team members working on the PalBoti project
+            </p>
           </div>
           <div className="mt-4 md:mt-0">
-            <Button className="bg-primary hover:bg-primary/90">Contact Team</Button>
+            <Button className="bg-primary hover:bg-primary/90">
+              Contact Team
+            </Button>
           </div>
         </div>
       </div>
@@ -89,14 +101,22 @@ export default function OthersPage() {
             <Users className="mr-2 h-5 w-5 text-primary" />
             Team Members
           </CardTitle>
-          <CardDescription>PalBoti project team with roles and expertise</CardDescription>
+          <CardDescription>
+            PalBoti project team with roles and expertise
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 mb-4 flex-wrap">
-            <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100">
+            <Badge
+              variant="outline"
+              className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100"
+            >
               Supervisor
             </Badge>
-            <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+            <Badge
+              variant="outline"
+              className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+            >
               Technical
             </Badge>
           </div>
@@ -164,7 +184,11 @@ export default function OthersPage() {
                     <h4 className="text-xs font-medium mb-2">Expertise</h4>
                     <div className="flex flex-wrap gap-1">
                       {member.expertise.map((skill) => (
-                        <Badge key={skill} variant="outline" className="text-xs">
+                        <Badge
+                          key={skill}
+                          variant="outline"
+                          className="text-xs"
+                        >
                           {skill}
                         </Badge>
                       ))}
@@ -177,5 +201,5 @@ export default function OthersPage() {
         </CardContent>
       </Card>
     </>
-  )
+  );
 }

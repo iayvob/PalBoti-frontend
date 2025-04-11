@@ -22,6 +22,10 @@ import {
 import { Line, Pie } from "react-chartjs-2";
 import { Skeleton } from "../ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
+import { useSession } from "next-auth/react";
+import { useOverlay } from "@/contexts/overlay-context";
+import { redirect } from "next/navigation";
 
 interface Insight {
   id: string;
@@ -36,6 +40,23 @@ interface Insight {
 }
 
 export default function InsightsSection() {
+  const { data: session, status } = useSession();
+  const { requestOverlay, hideOverlay } = useOverlay();
+
+  // Overlay on loading state
+  useEffect(() => {
+    if (status === "loading") requestOverlay(true);
+    else hideOverlay();
+  }, [status, requestOverlay, hideOverlay]);
+
+  // Redirect on auth
+  useEffect(() => {
+    if (status === "authenticated") {
+      hideOverlay();
+      redirect("/dashboard");
+    }
+  }, [status, hideOverlay]);
+
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -89,91 +110,94 @@ export default function InsightsSection() {
   });
 
   useEffect(() => {
-    fetchInsights();
-  }, []);
+    const fetchInsights = async () => {
+      try {
+        setLoading(true);
 
-  const fetchInsights = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/insights");
-      const data = await response.json();
+        const { data } = await axios.get(
+          `/api/insights?userId=${session?.user?.id}`
+        );
 
-      if (data.insights) {
-        setInsights(data.insights);
-      }
+        if (data.insights) {
+          setInsights(data.insights);
+        }
 
-      // Fetch chart data
-      const dashboardResponse = await fetch("/api/dashboard");
-      const dashboardData = await dashboardResponse.json();
+        // Fetch chart data
+        const dashboardResponse = await fetch("/api/dashboard");
+        const dashboardData = await dashboardResponse.json();
 
-      if (dashboardData.categories) {
-        // Process category data for chart
-        const categoryLabels = Object.keys(dashboardData.categories);
-        const categoryValues = Object.values(dashboardData.categories);
+        if (dashboardData.categories) {
+          // Process category data for chart
+          const categoryLabels = Object.keys(dashboardData.categories);
+          const categoryValues = Object.values(dashboardData.categories);
 
-        // Generate colors based on the number of categories
-        const colors = categoryLabels.map((_, index) => {
-          const opacity = 0.3 + 0.4 * (index / categoryLabels.length);
-          return {
-            bg: `rgba(239, 68, 68, ${opacity})`,
-            border: "rgba(239, 68, 68, 1)",
-          };
+          // Generate colors based on the number of categories
+          const colors = categoryLabels.map((_, index) => {
+            const opacity = 0.3 + 0.4 * (index / categoryLabels.length);
+            return {
+              bg: `rgba(239, 68, 68, ${opacity})`,
+              border: "rgba(239, 68, 68, 1)",
+            };
+          });
+
+          setChartData((prev) => ({
+            ...prev,
+            categories: {
+              labels: categoryLabels,
+              datasets: [
+                {
+                  ...prev.categories.datasets[0],
+                  data: categoryValues as number[],
+                  backgroundColor: colors.map((c) => c.bg),
+                  borderColor: colors.map((c) => c.border),
+                },
+              ],
+            },
+          }));
+        }
+
+        // Set efficiency data if available
+        if (dashboardData.efficiencyHistory) {
+          setChartData((prev: typeof chartData) => ({
+            ...prev,
+            efficiency: {
+              labels: dashboardData.efficiencyHistory.map(
+                (item: { month: string; rate: number }) => item.month
+              ),
+              datasets: [
+                {
+                  ...prev.efficiency.datasets[0],
+                  data: dashboardData.efficiencyHistory.map(
+                    (item: { month: string; rate: number }) => item.rate
+                  ) as number[],
+                },
+              ],
+            },
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching insights:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch insights. Please try again.",
+          variant: "destructive",
         });
-
-        setChartData((prev) => ({
-          ...prev,
-          categories: {
-            labels: categoryLabels,
-            datasets: [
-              {
-                ...prev.categories.datasets[0],
-                data: categoryValues as number[],
-                backgroundColor: colors.map((c) => c.bg),
-                borderColor: colors.map((c) => c.border),
-              },
-            ],
-          },
-        }));
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Set efficiency data if available
-      if (dashboardData.efficiencyHistory) {
-        setChartData((prev: typeof chartData) => ({
-          ...prev,
-          efficiency: {
-            labels: dashboardData.efficiencyHistory.map(
-              (item: { month: string; rate: number }) => item.month
-            ),
-            datasets: [
-              {
-                ...prev.efficiency.datasets[0],
-                data: dashboardData.efficiencyHistory.map(
-                  (item: { month: string; rate: number }) => item.rate
-                ) as number[],
-              },
-            ],
-          },
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching insights:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch insights. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    if (status === "authenticated") {
+      fetchInsights();
     }
-  };
+  }, [status]);
 
   const generateInsights = async () => {
     try {
       setGenerating(true);
-      const response = await fetch("/api/insights", {
-        method: "POST",
+      const { data } = await axios.post("/api/insights", {
+        userId: session?.user.id,
       });
-      const data = await response.json();
 
       if (data.insights) {
         setInsights([...data.insights, ...insights]);
@@ -196,15 +220,9 @@ export default function InsightsSection() {
 
   const markAsRead = async (id: string) => {
     try {
-      const response = await fetch(`/api/insights/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isRead: true }),
-      });
+      const { status } = await axios.get(`/api/insights/${id}`);
 
-      if (response.ok) {
+      if (status === 200) {
         setInsights(
           insights.map((insight) =>
             insight.id === id ? { ...insight, isRead: true } : insight
@@ -218,15 +236,11 @@ export default function InsightsSection() {
 
   const archiveInsight = async (id: string) => {
     try {
-      const response = await fetch(`/api/insights/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isArchived: true }),
+      const { status } = await axios.patch(`/api/insights/${id}`, {
+        userId: session?.user.id,
       });
 
-      if (response.ok) {
+      if (status === 200) {
         setInsights(insights.filter((insight) => insight.id !== id));
         toast({
           title: "Insight archived",

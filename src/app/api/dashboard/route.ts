@@ -1,15 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { auth } from "@clerk/nextjs/server"
 import prisma from "../../../lib/prisma"
 
 export async function GET(_req: NextRequest) {
   try {
-    const { userId } = await auth()
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     // Get counts
     const productCount = await prisma.product.count()
     const robotCount = await prisma.robot.count()

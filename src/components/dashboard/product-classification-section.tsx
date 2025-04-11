@@ -1,31 +1,44 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Package } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { Progress } from "../ui/progress"
-import { Skeleton } from "../ui/skeleton"
+import { useState, useEffect } from "react";
+import { Package } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Progress } from "../ui/progress";
+import { Skeleton } from "../ui/skeleton";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 
 export default function ProductClassificationSection() {
-  const [categories, setCategories] = useState<Array<{ name: string; count: number; percentage: number }>>([])
-  const [loading, setLoading] = useState(true)
+  const [categories, setCategories] = useState<
+    Array<{ name: string; count: number; percentage: number }>
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     async function fetchProductCategories() {
       try {
-        const response = await fetch("/api/products/categories")
-        if (!response.ok) throw new Error("Failed to fetch product categories")
-        const data = await response.json()
-        setCategories(data.categories)
+        const { data } = await axios.get("/api/products/categories", {
+          params: { userId: session?.user.id },
+        });
+        setCategories(data.categories);
       } catch (error) {
-        console.error("Error fetching product categories:", error)
+        console.error("Error fetching product categories:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchProductCategories()
-  }, [])
+    if (status === "authenticated") {
+      fetchProductCategories();
+    }
+  }, [status]);
 
   if (loading) {
     return (
@@ -54,7 +67,7 @@ export default function ProductClassificationSection() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -72,7 +85,9 @@ export default function ProductClassificationSection() {
             <div key={category.name} className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{category.name}</span>
-                <span className="text-sm text-muted-foreground">{category.count.toLocaleString()} items</span>
+                <span className="text-sm text-muted-foreground">
+                  {category.count.toLocaleString()} items
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Progress
@@ -82,12 +97,14 @@ export default function ProductClassificationSection() {
                     background: "rgba(239, 68, 68, 0.2)",
                   }}
                 />
-                <span className="text-xs text-muted-foreground w-8">{category.percentage}%</span>
+                <span className="text-xs text-muted-foreground w-8">
+                  {category.percentage}%
+                </span>
               </div>
             </div>
           ))}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

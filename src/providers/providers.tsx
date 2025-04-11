@@ -1,10 +1,10 @@
 "use client";
 import type React from "react";
 import type { Metadata } from "next";
-import { ClerkProvider, useAuth } from "@clerk/nextjs";
 import { ToastProvider } from "../components/ui/toast";
 import { ThemeProvider } from "../components/theme-provider";
-import AuthWarper from "./auth-warpper";
+import { SessionProvider } from "next-auth/react";
+import { OverlayProvider } from "@/contexts/overlay-context";
 
 export const metadata: Metadata = {
   title: "Smart Warehouse Manager | PalBoti",
@@ -17,19 +17,21 @@ export const metadata: Metadata = {
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <main>
-      {" "}
-      <ClerkProvider appearance={{ layout: { logoPlacement: "inside" } }}>
+      <SessionProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <ToastProvider>
-            <AuthWarper>{children}</AuthWarper>
-          </ToastProvider>
+          <OverlayProvider>
+            <ToastProvider>
+              {children}
+              <ToastProvider />
+            </ToastProvider>
+          </OverlayProvider>
         </ThemeProvider>
-      </ClerkProvider>
+      </SessionProvider>
     </main>
   );
 }

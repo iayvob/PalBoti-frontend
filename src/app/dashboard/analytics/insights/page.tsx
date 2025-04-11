@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../../../../components/ui/card"
 import { Badge } from "../../../../components/ui/badge"
 import { Button } from "../../../../components/ui/button"
-import { Brain, Lightbulb, ArrowLeft, RefreshCcw, Download, Share2 } from "lucide-react"
+import { Brain, Lightbulb, ArrowLeft, RefreshCcw, Download } from "lucide-react"
 import Link from "next/link"
 
 export const metadata = {
@@ -140,32 +140,12 @@ export default function InsightsPage() {
                       </Badge>
                       <Badge variant="outline">{insight.timeToImplement}</Badge>
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Download className="h-3 w-3 mr-1" />
-                        Export
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Share2 className="h-3 w-3 mr-1" />
-                        Share
-                      </Button>
-                      <Button size="sm" className="ml-auto bg-primary hover:bg-primary/90">
-                        Implement
-                      </Button>
-                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between border-t pt-6">
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export All Insights
-          </Button>
-          <Button variant="outline">View Historical Insights</Button>
-        </CardFooter>
       </Card>
     </>
   )

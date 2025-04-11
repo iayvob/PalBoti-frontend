@@ -1,17 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { auth } from "@clerk/nextjs/server"
 import prisma from "../../../../lib/prisma"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth()
+    const { searchParams } = new URL(req.url)
+    const userId = searchParams.get("userId")
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-
-
-    
 
     // In a real application, this would fetch from the database
     // For now, we'll use the same data structure but fetch from a Zone model

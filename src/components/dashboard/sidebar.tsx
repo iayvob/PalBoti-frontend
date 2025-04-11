@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { BarChart3, LayoutDashboard, Package, Settings, Users, Layers, Warehouse } from "lucide-react"
@@ -20,15 +19,17 @@ interface SidebarItemProps {
   href: string
   active?: boolean
   collapsed?: boolean
+  onClick?: () => void
 }
 
-function SidebarItem({ icon: Icon, label, href, active = false, collapsed = false }: SidebarItemProps) {
+function SidebarItem({ icon: Icon, label, href, active = false, collapsed = false, onClick }: SidebarItemProps) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Link href={href} passHref>
             <Button
+              onClick={onClick}
               variant={active ? "secondary" : "ghost"}
               className={cn(
                 "w-full justify-start",
@@ -77,6 +78,7 @@ export default function Sidebar({ open }: SidebarProps) {
             href="/dashboard"
             active={activeItem === "dashboard"}
             collapsed={!open}
+            onClick={() => setActiveItem("dashboard")}
           />
           <SidebarItem
             icon={Warehouse}
@@ -84,6 +86,7 @@ export default function Sidebar({ open }: SidebarProps) {
             href="/dashboard/warehouse"
             active={activeItem === "warehouse"}
             collapsed={!open}
+            onClick={() => setActiveItem("warehouse")}
           />
           <SidebarItem
             icon={Layers}
@@ -91,6 +94,7 @@ export default function Sidebar({ open }: SidebarProps) {
             href="/dashboard/shelves"
             active={activeItem === "shelves"}
             collapsed={!open}
+            onClick={() => setActiveItem("shelves")}
           />
           <SidebarItem
             icon={Package}
@@ -98,6 +102,7 @@ export default function Sidebar({ open }: SidebarProps) {
             href="/dashboard/products"
             active={activeItem === "products"}
             collapsed={!open}
+            onClick={() => setActiveItem("products")}
           />
           <SidebarItem
             icon={BarChart3}
@@ -105,8 +110,16 @@ export default function Sidebar({ open }: SidebarProps) {
             href="/dashboard/analytics"
             active={activeItem === "analytics"}
             collapsed={!open}
+            onClick={() => setActiveItem("analytics")}
           />
-          <SidebarItem icon={Users} label="Others" href="/others" active={activeItem === "others"} collapsed={!open} />
+          <SidebarItem
+            icon={Users}
+            label="Others"
+            href="/dashboard/others"
+            active={activeItem === "others"}
+            collapsed={!open}
+            onClick={() => setActiveItem("others")}
+          />
         </nav>
       </div>
       <div className="border-t p-2">
@@ -116,6 +129,7 @@ export default function Sidebar({ open }: SidebarProps) {
           href="/dashboard/settings"
           active={activeItem === "settings"}
           collapsed={!open}
+          onClick={() => setActiveItem("settings")}
         />
       </div>
     </aside>
