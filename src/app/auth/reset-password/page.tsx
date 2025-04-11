@@ -1,3 +1,4 @@
+"use client"
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import LoadingSpinner from "@/components/loader";
 import { Suspense } from "react";
