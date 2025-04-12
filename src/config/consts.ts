@@ -4,6 +4,6 @@ export const CLIENT_URL = {
 }
 
 export const SERVER_API_URL = {
-    v2: 'https://backend.palbotii.vercel.app/api/v2',
+    v2: "https://backend-palbotii.up.railway.app",
     test: 'http://localhost:5000/api/v2'
 } 
