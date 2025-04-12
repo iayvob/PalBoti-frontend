@@ -11,7 +11,7 @@ export default function SignOutButton() {
   const { status } = useSession();
   const handleSignOut = async () => {
     if (status === "authenticated") {
-      const res = await axios.post(`${SERVER_API_URL.test}/auth/logout`, {
+      const res = await axios.post(`${SERVER_API_URL.v2}/auth/logout`, {
         headers: {
           "Content-Type": "application/json",
         },
