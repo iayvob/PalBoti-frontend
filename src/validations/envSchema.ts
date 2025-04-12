@@ -25,11 +25,6 @@ export const envSchema = z.object({
 
     // Google Gemini Api Keys
     GEMINI_API_KEY: stringNonEmpty(),
-
-    // MQTT & HiveMQ
-    MQTT_BROKER_URL: stringNonEmpty(),
-    MQTT_USERNAME: stringNonEmpty(),
-    MQTT_PASSWORD: stringNonEmpty()
 });
 
 // Infer ENV type from the schema
