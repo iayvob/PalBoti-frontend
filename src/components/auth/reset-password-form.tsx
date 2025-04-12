@@ -112,7 +112,7 @@ export function ResetPasswordForm() {
         data,
       }: { status: number; data: { error?: string; message?: string } } =
         await axios.post(
-          `${SERVER_API_URL.test}/auth/forgot-password`,
+          `${SERVER_API_URL.v2}/auth/forgot-password`,
           dataToSend,
           { headers: { "Content-Type": "application/json" } }
         );
@@ -145,7 +145,7 @@ export function ResetPasswordForm() {
         data,
       }: { status: number; data: { error?: string; message?: string } } =
         await axios.post(
-          `${SERVER_API_URL.test}/auth/reset-password?token=${dataToSend.token}`,
+          `${SERVER_API_URL.v2}/auth/reset-password?token=${dataToSend.token}`,
           { password: dataToSend.password },
           { headers: { "Content-Type": "application/json" } }
         );

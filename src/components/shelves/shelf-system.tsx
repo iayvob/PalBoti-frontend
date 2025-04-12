@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import {
@@ -11,7 +11,6 @@ import {
   PenToolIcon as Tool,
   ChevronDown,
   ChevronUp,
-  Plus,
 } from "lucide-react";
 import {
   Tooltip,
@@ -29,101 +28,133 @@ import {
   DialogTrigger,
 } from "../../components/ui/dialog";
 import { ProductCard } from "../products/product-card";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 
-// Mock data for shelves
-const initialShelves = [
-  {
-    id: "S-001",
-    name: "Shelf A1",
-    stages: [
-      { id: "S-001-1", status: "occupied", productId: "P-001" },
-      { id: "S-001-2", status: "available", productId: null },
-      { id: "S-001-3", status: "maintenance", productId: null },
-    ],
-  },
-  {
-    id: "S-002",
-    name: "Shelf A2",
-    stages: [
-      { id: "S-002-1", status: "occupied", productId: "P-002" },
-      { id: "S-002-2", status: "occupied", productId: "P-003" },
-      { id: "S-002-3", status: "available", productId: null },
-    ],
-  },
-  {
-    id: "S-003",
-    name: "Shelf A3",
-    stages: [
-      { id: "S-003-1", status: "reserved", productId: null },
-      { id: "S-003-2", status: "available", productId: null },
-      { id: "S-003-3", status: "available", productId: null },
-    ],
-  },
-  {
-    id: "S-004",
-    name: "Shelf B1",
-    stages: [
-      { id: "S-004-1", status: "occupied", productId: "P-004" },
-      { id: "S-004-2", status: "occupied", productId: "P-005" },
-      { id: "S-004-3", status: "occupied", productId: "P-006" },
-    ],
-  },
-];
+// Type definitions matching your Prisma slot model and your shelf system
+type Slot = {
+  id: string;
+  userId: string;
+  name: string;
+  category: string;
+  status: string;
+  location?: string;
+  stage: number;
+  zone: string;
+  updatedAt: string;
+  productId?: string;
+};
 
-// Mock data for products
-const products = {
-  "P-001": {
-    id: "P-001",
-    name: "Electronic Component A",
-    status: "stored",
-    tags: ["electronics", "fragile"],
-  },
-  "P-002": {
-    id: "P-002",
-    name: "Clothing Item B",
-    status: "ready-to-ship",
-    tags: ["clothing", "light"],
-  },
-  "P-003": {
-    id: "P-003",
-    name: "Food Product C",
-    status: "stored",
-    tags: ["food", "perishable"],
-  },
-  "P-004": {
-    id: "P-004",
-    name: "Home Goods D",
-    status: "processing",
-    tags: ["home", "heavy"],
-  },
-  "P-005": {
-    id: "P-005",
-    name: "Toy Item E",
-    status: "stored",
-    tags: ["toys", "fragile"],
-  },
-  "P-006": {
-    id: "P-006",
-    name: "Electronic Component F",
-    status: "ready-to-ship",
-    tags: ["electronics", "valuable"],
-  },
+type Stage = {
+  id: string;
+  status: string;
+  productId: string | null;
+};
+
+type Shelf = {
+  id: string;
+  name: string;
+  stages: Stage[];
+};
+
+type Product = {
+  id: string;
+  name: string;
+  status: string;
+  tags: string[];
 };
 
 export default function ShelfSystem() {
-  const [shelves, setShelves] = useState(initialShelves);
-  const [expandedShelf, setExpandedShelf] = useState<string | null>("S-001");
+  const { data: session } = useSession();
+  const [shelves, setShelves] = useState<Shelf[]>([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [expandedShelf, setExpandedShelf] = useState<string | null>(null);
+
+  // Fetch slots data from your API using the current user's ID
+  useEffect(() => {
+    async function fetchSlots() {
+      if (session?.user?.id) {
+        try {
+          const { data } = await axios.post<Slot[]>("/api/slots", {
+            userId: session.user.id,
+          });
+          if (Array.isArray(data)) {
+            setSlots(data);
+          }
+        } catch (error) {
+          console.error("Error fetching slots:", error);
+        }
+      }
+    }
+    fetchSlots();
+  }, [session]);
+
+  // Fetch products data from your API using the current user's ID
+  useEffect(() => {
+    async function fetchProducts() {
+      if (session?.user?.id) {
+        try {
+          const response = await axios.post<{ success: boolean; data: Product[] }>("/api/products", {
+            userId: session.user.id,
+          });
+          if (response.data.success && Array.isArray(response.data.data)) {
+            setProducts(response.data.data);
+          }
+        } catch (error) {
+          console.error("Error fetching products:", error);
+        }
+      }
+    }
+    fetchProducts();
+  }, [session]);
+
+  // Map fetched slots into shelves based on location and stage.
+  // Use the slot's status directly and assign productId if available.
+  useEffect(() => {
+    if (slots.length > 0) {
+      const shelvesMap: { [key: string]: Shelf } = {};
+
+      slots.forEach((slot) => {
+        // Only process slots with a defined location (e.g. "A1", "A2", etc.)
+        if (!slot.location) return;
+
+        const shelfId = slot.location;
+        if (!shelvesMap[shelfId]) {
+          shelvesMap[shelfId] = {
+            id: shelfId,
+            name: `Shelf ${shelfId}`,
+            stages: [],
+          };
+        }
+        shelvesMap[shelfId].stages.push({
+          id: `${shelfId}-${slot.stage}`,
+          status: slot.status, // using the status from slot directly
+          productId: slot.productId ? slot.productId : null,
+        });
+      });
+
+      // Sort each shelf's stages by the stage number (extracted from the stage id)
+      const mappedShelves = Object.values(shelvesMap).map((shelf) => ({
+        ...shelf,
+        stages: shelf.stages.sort((a, b) => {
+          const stageA = parseInt(a.id.split("-")[1]);
+          const stageB = parseInt(b.id.split("-")[1]);
+          return stageA - stageB;
+        }),
+      }));
+
+      setShelves(mappedShelves);
+    }
+  }, [slots]);
 
   const toggleShelf = (shelfId: string) => {
-    if (expandedShelf === shelfId) {
-      setExpandedShelf(null);
-    } else {
-      setExpandedShelf(shelfId);
-    }
+    setExpandedShelf(expandedShelf === shelfId ? null : shelfId);
   };
 
+  // Get the icon for a given stage status
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "available":
         return <CheckCircle2 className="h-5 w-5 text-green-500" />;
       case "occupied":
@@ -136,6 +167,10 @@ export default function ShelfSystem() {
         return <AlertCircle className="h-5 w-5 text-gray-500" />;
     }
   };
+
+  // Helper to find a product by its id from the fetched list
+  const getProductById = (id: string) =>
+    products.find((product) => product.id === id);
 
   return (
     <div className="space-y-4">
@@ -158,7 +193,6 @@ export default function ShelfSystem() {
               <ChevronDown className="h-5 w-5" />
             )}
           </Button>
-
           {expandedShelf === shelf.id && (
             <CardContent className="pt-0">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
@@ -175,26 +209,18 @@ export default function ShelfSystem() {
                         {stage.id}
                       </span>
                     </div>
-
-                    {stage.productId ? (
+                    {stage.productId && (
                       <div className="mt-2">
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className="cursor-pointer">
-                                {stage.productId &&
-                                  products[
-                                    stage.productId as keyof typeof products
-                                  ] && (
-                                    <ProductCard
-                                      product={
-                                        products[
-                                          stage.productId as keyof typeof products
-                                        ]
-                                      }
-                                      compact
-                                    />
-                                  )}
+                                {getProductById(stage.productId) && (
+                                  <ProductCard
+                                    product={getProductById(stage.productId)!}
+                                    compact
+                                  />
+                                )}
                               </div>
                             </TooltipTrigger>
                             <TooltipContent
@@ -216,18 +242,16 @@ export default function ShelfSystem() {
                                     </DialogDescription>
                                   </DialogHeader>
                                   <div className="py-4">
-                                    {stage.productId in products && (
+                                    {getProductById(stage.productId) && (
                                       <ProductCard
-                                        product={
-                                          products[
-                                            stage.productId as keyof typeof products
-                                          ]
-                                        }
+                                        product={getProductById(stage.productId)!}
                                       />
                                     )}
                                   </div>
                                   <DialogFooter>
-                                    <Button variant="outline">Close</Button>
+                                    <Button variant="outline">
+                                      Close
+                                    </Button>
                                     <Button>Move Product</Button>
                                   </DialogFooter>
                                 </DialogContent>
@@ -235,18 +259,6 @@ export default function ShelfSystem() {
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                      </div>
-                    ) : (
-                      <div className="mt-4 flex justify-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={stage.status === "maintenance"}
-                          className="text-xs"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Assign Product
-                        </Button>
                       </div>
                     )}
                   </div>

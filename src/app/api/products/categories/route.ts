@@ -11,7 +11,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all products
-    const products = await prisma.product.findMany()
+    const products = await prisma.product.findMany({
+      where: {
+        userId
+      }
+    })
 
     // Count products by category
     const categoryCounts: Record<string, number> = {}

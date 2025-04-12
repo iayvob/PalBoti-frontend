@@ -60,7 +60,7 @@ export function VerifyEmailForm() {
       try {
         requestOverlay(true);
         const response = await axios.post(
-          `${SERVER_API_URL.test}/auth/verify-email?token=${token}`,
+          `${SERVER_API_URL.v2}/auth/verify-email?token=${token}`,
           {},
           { headers: { "Content-Type": "application/json" } }
         );
@@ -133,7 +133,7 @@ export function VerifyEmailForm() {
         data: resData,
       }: { status: number; data: { error?: string; message?: string } } =
         await axios.post(
-          `${SERVER_API_URL.test}/auth/send-verification-email`,
+          `${SERVER_API_URL.v2}/auth/send-verification-email`,
           data,
           { headers: { "Content-Type": "application/json" } }
         );

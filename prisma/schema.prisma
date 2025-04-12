@@ -19,7 +19,6 @@ model User {
   isVerified        Boolean   @default(false)
   password          String
   userRole          Roles     @default(simple)
-  @@map("users")
 }
 
 model Token {
@@ -29,88 +28,71 @@ model Token {
   userId                  String
   tokenExpires            DateTime
   tokenType               TokenType
-
-  @@unique([userId, tokenType], name: "userId_tokenType")
 }
 
 
 model Product {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  productId  String   @unique
-  name       String
+  userId     String
   category   String
+  stage      Int
   status     String
   location   String?
-  weight     Float?
-  dimensions String?
   tags       String[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  tasks      Task[]
-
-  @@map("products")
+  updatedAt  DateTime @default(now())
 }
 
-model Task {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  taskId         String    @unique
-  type           String
-  status         String
-  priority       String
-  product        Product?  @relation(fields: [productId], references: [id])
-  productId      String?   @db.ObjectId
-  sourceLocation String?
-  targetLocation String?
-  robotId        String?
-  createdAt      DateTime  @default(now())
-  completedAt    DateTime?
-  robot          Robot?    @relation(fields: [robotId], references: [id])
-
-  @@map("tasks")
+model task {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String
+  email         String  
+  description   String 
+  name          String
+  status        String
+  updatedAt     DateTime @default(now())
 }
 
-model Robot {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  robotId      String    @unique
-  name         String
-  status       String
-  battery      Float
-  location     String
-  load         Float
-  lastUpdated  DateTime  @default(now())
-  currentTaskId String?
-  tasks        Task[]
-  logs         RobotLog[]
-
-  @@map("robots")
+model robot {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  location   locationType? @default(init)
+  charge     String  @default("70%")
+  updatedAt  DateTime @default(now())
 }
 
-model RobotLog {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  robot     Robot    @relation(fields: [robotId], references: [id])
-  robotId   String   @db.ObjectId
-  eventType String
-  message   String
-  timestamp DateTime @default(now())
-  data      Json?
-
-  @@map("robot_logs")
+model slot {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  productId  String
+  stage      Int
+  zone       locationType
+  updatedAt  DateTime @default(now())
 }
+
+enum locationType {
+  init
+  A1
+  A2
+  A3
+  A4
+}
+
+enum Shelves {
+  A1
+  A2
+  A3
+  A4
+}
+
 
 model Insight {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   
   title       String
   description String
   category    String
-  confidence  Float
   impact      String
   createdAt   DateTime @default(now())
-  userId      String   @db.ObjectId
-  data        Json?
-  isRead      Boolean  @default(false)
-  isArchived  Boolean  @default(false)
-
-  @@map("insights")
 }
 
 model Notifier {
@@ -127,26 +109,6 @@ enum NotificationType {
   alert
   mission_completed
   mission_incomplete
-}
-
-
-model Zone {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  zoneId    String   @unique
-  type      String
-  status    String
-  items     Int
-  capacity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model EfficiencyRecord {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  month     String
-  year      Int
-  rate      Float
-  createdAt DateTime @default(now())
 }
 
 enum TokenType {

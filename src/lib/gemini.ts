@@ -6,12 +6,12 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 // Function to generate insights based on warehouse data
 export async function generateWarehouseInsights(data: any) {
   if (!process.env.GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY is not set in environment variables")
-    throw new Error("GEMINI_API_KEY is required")
+    console.error("GEMINI_API_KEY is not set in environment variables");
+    throw new Error("GEMINI_API_KEY is required");
   }
   try {
     // Access the model
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     // Prepare the prompt with warehouse data
     const prompt = `
@@ -38,25 +38,34 @@ export async function generateWarehouseInsights(data: any) {
           "category": "optimization"
         }
       ]
-    `
+    `;
 
     // Generate content
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const text = response.text()
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = await response.text();
+
+    // Clean the response text: Remove Markdown code fences if they exist.
+    let cleanText = text.trim();
+    if (cleanText.startsWith("```")) {
+      // Remove the starting fence (which might include "json" language hint)
+      cleanText = cleanText.replace(/^```(json)?\s*/i, "");
+      // Remove the trailing fence
+      cleanText = cleanText.replace(/\s*```$/, "");
+    }
 
     // Parse the JSON response
     try {
-      return JSON.parse(text)
+      return JSON.parse(cleanText);
     } catch (error) {
-      console.error("Error parsing Gemini response:", error)
-      // Try to extract JSON from the text if it's not properly formatted
-      const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/)
+      console.error("Error parsing Gemini response:", error);
+      // Try to extract JSON from the text using a regex as a fallback
+      const jsonMatch = cleanText.match(/\[\s*\{[\s\S]*\}\s*\]/);
       if (jsonMatch) {
         try {
-          return JSON.parse(jsonMatch[0])
+          return JSON.parse(jsonMatch[0]);
         } catch (e) {
-          console.error("Failed to extract JSON from response:", e)
+          console.error("Failed to extract JSON from response:", e);
           // Return a fallback response
           return [
             {
@@ -66,16 +75,17 @@ export async function generateWarehouseInsights(data: any) {
               impact: "medium",
               category: "system",
             },
-          ]
+          ];
         }
       }
-      throw new Error("Failed to parse Gemini response")
+      throw new Error("Failed to parse Gemini response");
     }
   } catch (error) {
-    console.error("Error generating insights with Gemini:", error)
-    throw error
+    console.error("Error generating insights with Gemini:", error);
+    throw error;
   }
 }
+
 
 // Function to analyze robot performance
 export async function analyzeRobotPerformance(robotData: any) {

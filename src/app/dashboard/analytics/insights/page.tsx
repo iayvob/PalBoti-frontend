@@ -1,74 +1,69 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../../../../components/ui/card"
-import { Badge } from "../../../../components/ui/badge"
-import { Button } from "../../../../components/ui/button"
-import { Brain, Lightbulb, ArrowLeft, RefreshCcw, Download } from "lucide-react"
-import Link from "next/link"
+"use client";
 
-export const metadata = {
-  title: "AI Insights | Analytics | Smart Warehouse Manager",
-  description: "AI-powered insights and recommendations for warehouse optimization",
-}
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 
-// Mock data for AI insights
-const insights = [
-  {
-    id: "INS-001",
-    title: "Optimize Shelf Arrangement",
-    description:
-      "Based on current product flow patterns, rearranging shelves A2 and B1 could reduce robot travel distance by 15% and improve efficiency.",
-    confidence: 99.2,
-    category: "optimization",
-    impact: "high",
-    timeToImplement: "1-2 days",
-    generatedAt: "2025-04-08T14:30:00Z",
-  },
-  {
-    id: "INS-002",
-    title: "Maintenance Alert",
-    description:
-      "Robot PB-001 is showing early signs of reduced efficiency in its picking mechanism. Schedule maintenance within the next 48 hours to prevent downtime.",
-    confidence: 87.5,
-    category: "maintenance",
-    impact: "medium",
-    timeToImplement: "immediate",
-    generatedAt: "2025-04-08T15:45:00Z",
-  },
-  {
-    id: "INS-003",
-    title: "Inventory Optimization",
-    description:
-      "Current electronic component stock levels are 30% higher than optimal. Consider reducing next order quantity to optimize storage space and capital allocation.",
-    confidence: 95.8,
-    category: "inventory",
-    impact: "medium",
-    timeToImplement: "next order cycle",
-    generatedAt: "2025-04-08T16:20:00Z",
-  },
-  {
-    id: "INS-004",
-    title: "Traffic Flow Improvement",
-    description:
-      "Creating a one-way path in the central warehouse corridor would reduce robot congestion by approximately 40% during peak hours.",
-    confidence: 92.3,
-    category: "layout",
-    impact: "high",
-    timeToImplement: "3-5 days",
-    generatedAt: "2025-04-08T17:10:00Z",
-  },
-  {
-    id: "INS-005",
-    title: "Energy Consumption Reduction",
-    description:
-      "Adjusting robot charging schedules to off-peak hours could reduce energy costs by 12% while maintaining the same operational capacity.",
-    confidence: 89.7,
-    category: "energy",
-    impact: "low",
-    timeToImplement: "1 day",
-    generatedAt: "2025-04-08T18:05:00Z",
-  },
-]
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "../../../../components/ui/card";
+import { Badge } from "../../../../components/ui/badge";
+import { Button } from "../../../../components/ui/button";
+import { Brain, Lightbulb, ArrowLeft, RefreshCcw } from "lucide-react";
+
+// Define the Insight type based on the generated data and saved fields
+type Insight = {
+  id: string;
+  title: string;
+  description: string;
+  confidence: number;
+  category: string;
+  impact: string;
+  timeToImplement: string;
+  generatedAt: string;
+};
 
 export default function InsightsPage() {
+  const { data: session } = useSession();
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Optionally, you can load existing insights when the component mounts.
+  // For simplicity, this example only refreshes insights on button click.
+  useEffect(() => {
+    // If you need to initially load insights from an endpoint, you can do that here.
+    // e.g., axios.get('/api/insights').then((res)=> setInsights(res.data.insights));
+  }, []);
+
+  const handleGenerateInsights = async () => {
+    if (!session?.user?.id) return;
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post<{ insights: Insight[] }>("/api/insights", {
+        userId: session.user.id,
+      });
+
+      if (response.data && response.data.insights) {
+        setInsights(response.data.insights);
+      }
+    } catch (error) {
+      console.error("Error generating insights:", error);
+      // Optionally, you can display an error alert here.
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Format the generation timestamp based on the latest insight if available.
+  const latestGenerationDate = insights.length > 0 ? new Date(insights[0].generatedAt).toLocaleString() : "";
+
   return (
     <>
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
@@ -80,13 +75,15 @@ export default function InsightsPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-primary">AI-Powered Insights</h1>
-            <p className="text-muted-foreground">Intelligent recommendations based on warehouse data</p>
+            <p className="text-muted-foreground">
+              Intelligent recommendations based on warehouse data
+            </p>
           </div>
         </div>
         <div className="mt-4 md:mt-0">
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button onClick={handleGenerateInsights} disabled={isLoading} className="bg-primary hover:bg-primary/90">
             <RefreshCcw className="mr-2 h-4 w-4" />
-            Generate New Insights
+            {isLoading ? "Generating Insights..." : "Generate New Insights"}
           </Button>
         </div>
       </div>
@@ -97,7 +94,11 @@ export default function InsightsPage() {
             <Brain className="mr-2 h-5 w-5 text-primary" />
             Latest Insights
           </CardTitle>
-          <CardDescription>Generated on April 8, 2025 at 18:05</CardDescription>
+          <CardDescription>
+            {latestGenerationDate
+              ? `Generated on ${latestGenerationDate}`
+              : "No insights generated yet."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
@@ -114,8 +115,8 @@ export default function InsightsPage() {
                           insight.confidence > 95
                             ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
                             : insight.confidence > 85
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
                         }
                       >
                         {insight.confidence}% Confidence
@@ -132,8 +133,8 @@ export default function InsightsPage() {
                           insight.impact === "high"
                             ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
                             : insight.impact === "medium"
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                              : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                            : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
                         }
                       >
                         {insight.impact} impact
@@ -144,9 +145,18 @@ export default function InsightsPage() {
                 </div>
               </div>
             ))}
+            {/* If no insights are loaded, show a placeholder message */}
+            {insights.length === 0 && (
+              <p className="text-center text-muted-foreground py-4">
+                No insights available. Click &quot;Generate New Insights&quot; to get started.
+              </p>
+            )}
           </div>
         </CardContent>
+        <CardFooter>
+          {/* Optional footer actions could go here */}
+        </CardFooter>
       </Card>
     </>
-  )
+  );
 }

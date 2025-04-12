@@ -77,13 +77,13 @@ async function logoutUser(): Promise<void> {
   try {
     // Post to the server-side logout endpoint
     const res1 = await axios.post(
-      `${SERVER_API_URL.test}/auth/logout`,
+      `${SERVER_API_URL.v2}/auth/logout`,
       {},
       { headers: { "Content-Type": "application/json" } }
     );
 
     // Call client-side endpoint for additional logout logic
-    const res2 = await fetch(`${CLIENT_URL.test}/api/server-logout`, {
+    const res2 = await fetch(`${CLIENT_URL.live}/api/server-logout`, {
       method: "POST",
     });
 
@@ -114,7 +114,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       success: string;
       tokens: RefreshApiResponse["tokens"];
     }>(
-      `${SERVER_API_URL.test}/auth/refresh-tokens`,
+      `${SERVER_API_URL.v2}/auth/refresh-tokens`,
       null,
       {
         // Pass the refresh token in a Cookie header
@@ -214,7 +214,7 @@ export const authOptions: NextAuthOptions = {
             const res = await axios.post<{
               success: string;
               user: ClientUserSchema;
-            }>(`${SERVER_API_URL.test}/auth/register`, dataToSend);
+            }>(`${SERVER_API_URL.v2}/auth/register`, dataToSend);
 
             if (res.status !== 201) {
               logger.error("Sign up failed.");
@@ -231,7 +231,7 @@ export const authOptions: NextAuthOptions = {
             const res = await axios.post<{
               success: string;
               user: ClientUserSchema;
-            }>(`${SERVER_API_URL.test}/auth/login`, dataToSend);
+            }>(`${SERVER_API_URL.v2}/auth/login`, dataToSend);
 
             if (res.status !== 200) {
               logger.error("Login failed.");

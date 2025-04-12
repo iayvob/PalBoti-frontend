@@ -7,7 +7,6 @@ import WarehouseMapSection from "../../components/dashboard/warehouse-map-sectio
 import { useSession } from "next-auth/react";
 import { useOverlay } from "@/contexts/overlay-context";
 import { useEffect } from "react";
-import { redirect } from "next/navigation";
 
 export default function DashboardPage() {
   const { status } = useSession();
@@ -23,7 +22,6 @@ export default function DashboardPage() {
   useEffect(() => {
     if (status === "authenticated") {
       hideOverlay();
-      redirect("/dashboard");
     }
   }, [status, hideOverlay]);
   return (

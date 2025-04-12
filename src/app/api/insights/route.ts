@@ -26,9 +26,8 @@ export async function GET(req: NextRequest) {
     const insights = await prisma.insight.findMany({
       where: {
         userId: user.id,
-        isArchived: false,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "desc" }, // Replace 'updatedAt' with a valid field like 'createdAt'
     })
 
     return NextResponse.json({ insights })
@@ -59,7 +58,7 @@ export async function POST(req: NextRequest) {
     const robots = await prisma.robot.findMany()
     const products = await prisma.product.findMany()
     const tasks = await prisma.task.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { updatedAt: "desc" },
       take: 50, // Get the 50 most recent tasks
     })
 
@@ -75,10 +74,8 @@ export async function POST(req: NextRequest) {
             title: insight.title,
             description: insight.description,
             category: insight.category,
-            confidence: insight.confidence,
             impact: insight.impact,
             userId: user.id,
-            data: insight.data || {},
           },
         })
       }),
