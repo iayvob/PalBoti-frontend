@@ -196,9 +196,6 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Log all received credentials
-        console.log("🪪 Received credentials:", credentials);
-
         const isSignup = credentials.isSignup === "true";
         const isDontRememberMe = credentials.dontRememberMe === "true";
 
@@ -226,7 +223,6 @@ export const authOptions: NextAuthOptions = {
             const dataToSend: LoginSchema = {
               email: credentials.email,
               password: credentials.password,
-              dontRememberMe: isDontRememberMe,
             };
             const res = await axios.post<{
               success: string;

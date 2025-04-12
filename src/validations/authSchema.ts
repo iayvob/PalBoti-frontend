@@ -16,7 +16,6 @@ export type RegisterUserSchema = {
 export type LoginSchema = {
     email: string,
     password?: string,
-    dontRememberMe: boolean,
 };
 
 // ────────────────────────────────────────────────────────────────

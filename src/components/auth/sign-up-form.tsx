@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { signIn } from "next-auth/react";
@@ -92,6 +92,7 @@ export function SignUpForm() {
       });
     } finally {
       setIsLoading(false);
+      redirect("/dashboard");
     }
   };
 

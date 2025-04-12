@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { LoginSchema, ForgotPasswordSchema } from "@/validations/authSchema";
+import type {
+  LoginSchema,
+  ForgotPasswordSchema,
+} from "@/validations/authSchema";
 import { useOverlay } from "@/contexts/overlay-context";
 import { signIn, useSession } from "next-auth/react";
 import { SERVER_API_URL } from "@/config/consts";
@@ -63,7 +66,6 @@ export function SignInForm() {
     defaultValues: {
       email: "",
       password: "",
-      dontRememberMe: false,
     },
   });
 
@@ -88,7 +90,6 @@ export function SignInForm() {
         email: data.email,
         password: data.password,
         isSignup: "false",
-        dontRememberMe: data.dontRememberMe ? "true" : "false",
       });
 
       if (result?.ok) {
@@ -113,6 +114,7 @@ export function SignInForm() {
     } finally {
       setIsLoading(false);
       hideOverlay();
+      redirect("/dashboard");
     }
   };
 
@@ -213,7 +215,9 @@ export function SignInForm() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -232,10 +236,12 @@ export function SignInForm() {
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="remember-me"
-                  {...register("dontRememberMe")}
                   className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600 dark:data-[state=checked]:bg-red-500 dark:data-[state=checked]:border-red-500"
                 />
-                <Label htmlFor="remember-me" className="text-sm font-medium text-foreground">
+                <Label
+                  htmlFor="remember-me"
+                  className="text-sm font-medium text-foreground"
+                >
                   Don't remember me
                 </Label>
               </div>
@@ -265,7 +271,10 @@ export function SignInForm() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                  <Loader2
+                    className="mr-2 h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
                   <span>Signing in...</span>
                   <span className="sr-only">Loading</span>
                 </>
@@ -313,7 +322,10 @@ export function SignInForm() {
                 className="border-input bg-background text-foreground focus-visible:ring-red-500"
               />
               {forgotErrors.email && (
-                <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                <p
+                  className="text-sm text-red-600 dark:text-red-400"
+                  role="alert"
+                >
                   {forgotErrors.email.message}
                 </p>
               )}
