@@ -132,7 +132,7 @@ export function SignInForm() {
     try {
       requestOverlay(true);
       const response = await axios.post(
-        `${SERVER_API_URL.v2}/api/auth/forgot-password`,
+        `${SERVER_API_URL.test}/api/auth/forgot-password`,
         { email: data.email },
         { headers: { "Content-Type": "application/json" } }
       );
